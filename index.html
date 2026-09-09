@@ -600,14 +600,23 @@ body {
 </style>
 </head>
 <body>
+<canvas id="starfield" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none"></canvas>
 
 <div id="app">
 
   <!-- ===== TITLE PANEL ===== -->
   <div class="gt-panel">
-    <div class="gt-title-row">
-      <div class="gt-title-icon">🚀</div>
-      <div class="gt-title-text">Startopia Trainer</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="gt-title-icon">🚀</div>
+        <div>
+          <div class="gt-title-text">Startopia Trainer</div>
+          <div style="font-size:0.42rem;color:#ffdd00;margin-top:4px">by Olyx • Ultimate Space Voyage Simulator</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button id="sound-btn" class="gt-btn gt-btn-yellow gt-btn-sm" onclick="toggleSound()">🔊 Audio: ON</button>
+      </div>
     </div>
 
     <!-- Stat cards -->
@@ -711,8 +720,9 @@ body {
 
   <!-- ===== MISSION BROWSER ===== -->
   <div class="gt-panel" id="mission-browser">
-    <div class="panel-title-row" style="padding:10px 14px 8px;border-bottom:1px solid rgba(100,180,255,0.2)">
+    <div class="panel-title-row" style="padding:10px 14px 8px;border-bottom:1px solid rgba(100,180,255,0.2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
       <div class="panel-title" style="font-size:0.65rem">🗺 Mission Select</div>
+      <input type="text" id="mission-search" placeholder="Search missions..." style="padding:4px 8px;background:rgba(10,30,50,0.8);border:2px solid rgba(100,180,255,0.4);color:#fff;font-family:'Press Start 2P',monospace;font-size:0.4rem;border-radius:4px;outline:none;" oninput="filterMissions(this.value)">
     </div>
     <div style="padding:10px 14px">
       <div id="mission-list"></div>
@@ -742,6 +752,10 @@ body {
     </div>
   </div>
 </div>
+
+  <footer style="text-align:center;font-size:0.42rem;color:#6b92b9;margin-top:20px;padding:12px 0;">
+    <p>© 2026 Olyx • Startopia Mission Trainer Suite • Growtopia Fan Utility</p>
+  </footer>
 
 <script>
 /* ============================================================
@@ -1135,6 +1149,139 @@ function buildMissionBrowser() {
 loadStats();
 renderStats();
 buildMissionBrowser();
+
+/* ============================================================
+   WEB AUDIO & VISUAL ENHANCEMENTS by Olyx
+============================================================ */
+let audioEnabled = true;
+let sfxCtx = null;
+
+function getAudioCtx() {
+  if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return sfxCtx;
+}
+
+function toggleSound() {
+  audioEnabled = !audioEnabled;
+  const btn = document.getElementById('sound-btn');
+  if (btn) btn.textContent = audioEnabled ? '🔊 Audio: ON' : '🔈 Audio: OFF';
+}
+
+function playSynthSound(type) {
+  if (!audioEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    
+    if (type === 'correct') {
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + (i * 0.06));
+        gain.gain.setValueAtTime(0.18, now + (i * 0.06));
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.06) + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + (i * 0.06));
+        osc.stop(now + (i * 0.06) + 0.18);
+      });
+    } else if (type === 'wrong') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.linearRampToValueAtTime(80, now + 0.25);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (type === 'victory') {
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + (i * 0.1));
+        gain.gain.setValueAtTime(0.22, now + (i * 0.1));
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.1) + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + (i * 0.1));
+        osc.stop(now + (i * 0.1) + 0.35);
+      });
+    }
+  } catch(e) {}
+}
+
+const origComplete = completeMission;
+completeMission = function() {
+  origComplete();
+  playSynthSound('victory');
+};
+
+const origHandleClick = handleClick;
+handleClick = function(toolId, el) {
+  if (state.locked || !state.playing) return;
+  const correct = state.mission.sequence[state.step];
+  if (toolId === correct) {
+    playSynthSound('correct');
+  } else {
+    playSynthSound('wrong');
+  }
+  origHandleClick(toolId, el);
+};
+
+function filterMissions(q) {
+  const term = q.toLowerCase().trim();
+  const pills = document.querySelectorAll('.mission-pill');
+  pills.forEach((p, idx) => {
+    const name = missionDatabase[idx].name.toLowerCase();
+    p.style.display = name.includes(term) ? 'block' : 'none';
+  });
+}
+
+(function initStarfield() {
+  const canvas = document.getElementById('starfield');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  const count = 80;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    stars = [];
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 0.4 + 0.1,
+        alpha: Math.random() * 0.7 + 0.3
+      });
+    }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    stars.forEach(s => {
+      ctx.globalAlpha = s.alpha;
+      ctx.fillRect(s.x, s.y, s.size, s.size);
+      s.y -= s.speed;
+      if (s.y < 0) s.y = canvas.height;
+    });
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  loop();
+})();
+
 </script>
 </body>
 </html>
