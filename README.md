@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/PixelArt-Retro-yellow?style=for-the-badge" alt="Retro Pixel Art" />
   <img src="https://img.shields.io/badge/Audio-8--Bit_Web_Audio_Synth-FF4B4B?style=for-the-badge" alt="8-bit Audio" />
   <img src="https://img.shields.io/badge/Deploy-GitHub_Pages-222222?style=for-the-badge&logo=githubpages&logoColor=white" alt="GitHub Pages" />
+  <img src="https://img.shields.io/badge/Author-Olyx-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Author" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
 </p>
 
@@ -89,7 +90,15 @@ startopia-simulator/
 
 ---
 
-## 📝 Lisensi & Atribusi
+## 📄 Lisensi & Atribusi Hak Cipta
 
-© 2026 **Olyx** ([@olyxmintabansos-byte](https://github.com/olyxmintabansos-byte)).  
-Dilisensikan di bawah naungan **[MIT License](LICENSE)**.
+<p align="center">
+  <img src="https://img.shields.io/badge/Made%20with%20%E2%9D%A4%EF%B8%8F%20by-Olyx-10B981?style=for-the-badge&logo=github" alt="Made by Olyx" />
+  <img src="https://img.shields.io/badge/%C2%A9%202026-Olyx-blue?style=for-the-badge" alt="Copyright 2026 Olyx" />
+</p>
+
+<p align="center">
+  Crafted with passion & precision by <strong><a href="https://github.com/olyxmintabansos-byte">Olyx</a></strong><br>
+  <strong>© 2026 by Olyx (@olyxmintabansos-byte)</strong>. All rights reserved.<br>
+  Dilisensikan di bawah naungan <a href="https://opensource.org/licenses/MIT">MIT License</a>.
+</p>
